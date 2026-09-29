@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><title>Examiner Dashboard</title>
+<link rel="stylesheet" href="style.css">
+<style>body{height:auto;padding:20px}.card{background:#1e293b;border:1px solid #334155;border-radius:6px;padding:16px;margin-bottom:14px}td{padding:5px 12px 5px 0}pre.code{max-height:250px;overflow:auto}.rev{color:#fbbf24;font-weight:700}</style>
+</head>
+<body>
+<h2>Examiner Dashboard <span class="tag">PROTOTYPE</span></h2>
+<button class="btn" onclick="render()">Refresh</button>
+<button class="btn gray" onclick="localStorage.removeItem('examSession');render()">Clear data</button>
+<div id="root"></div>
+<script>
+function render(){
+  const root = document.getElementById("root");
+  const raw = localStorage.getItem("examSession");
+  if(!raw){ root.innerHTML = "<p>No session found. Open index.html first.</p>"; return; }
+  const S = JSON.parse(raw);
+  const review = S.focus >= 3;
+  root.innerHTML = `<div class="card"><table>
+    <tr><td>Student</td><td id="a"></td></tr>
+    <tr><td>Submission status</td><td>${S.submitted?"Submitted":"In progress"}</td></tr>
+    <tr><td>Executions</td><td>${S.runs}</td></tr>
+    <tr><td>Focus changes</td><td>${S.focus}</td></tr>
+    <tr><td>Warnings shown</td><td>${S.warnings}</td></tr>
+    <tr><td>Keystrokes / edits / cursor</td><td>${S.keys} / ${S.edits} / ${S.cursor}</td></tr>
+    <tr><td>Behavioral events</td><td>${S.events.length}</td></tr>
+    <tr><td>Integrity status</td><td class="${review?"rev":"ok"}">${review?"Requires Review":"No immediate concern"}</td></tr>
+   </table>
+   <p class="muted">Status is a simple rule (3+ focus changes), NOT an AI decision. It does not indicate misconduct.</p></div>
+   <div class="card"><h3>Submitted code</h3><pre class="code" id="c"></pre></div>
+   <div class="card"><h3>Last 15 events</h3><pre class="code" id="e"></pre></div>`;
+  document.getElementById("a").textContent = S.student;
+  document.getElementById("c").textContent = S.code;
+  document.getElementById("e").textContent = S.events.slice(-15).map(x=>x.t.slice(11,19)+"  "+x.type+"  "+x.info).join("\n");
+}
+render(); setInterval(render, 3000);
+</script>
+</body>
+</html>
