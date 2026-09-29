@@ -3,9 +3,6 @@
 **AI-Powered Coding Exam Platform with Behavioral Proctoring**
 
 SentriCode is a browser-based coding examination platform that gives candidates a practical programming environment while protecting academic integrity during online assessments. It combines a reference-enabled coding IDE, AI-based behavioral integrity analysis, automated evaluation, and a blockchain ledger for tamper-proof records.
-
-> **Project status:** Planning phase (CSD 415 Project Phase I, Batch 2023-2027). Implementation has not started yet. This README describes the proposed design and will be updated as modules are built.
-
 ---
 
 ## Table of Contents
@@ -29,10 +26,10 @@ Online coding exams are hard to run fairly. Candidates can copy-paste code, get 
 SentriCode addresses this by:
 
 - Providing an IDE with syntax highlighting, a built-in function and syntax reference panel, and controlled assistance, so candidates focus on logic rather than memorizing syntax.
-- Monitoring multiple behavioral signals during the exam to compute an **integrity score**.
-- Using a **progressive warning mechanism** instead of immediate penalties.
-- Producing detailed **behavioral reports** so the examiner makes the final call.
-- Storing question papers and submissions on a **blockchain** for transparency and tamper-proof record keeping.
+- Monitoring multiple behavioral signals during the exam to compute an integrity score.
+- Using a progressive warning mechanism instead of immediate penalties.
+- Producing detailed behavioral reports so the examiner makes the final call.
+- Storing question papers and submissions on a blockchain for transparency and tamper-proof record keeping.
 
 ## Key Features
 
