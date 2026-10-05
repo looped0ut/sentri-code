@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>Examiner Dashboard</title>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+body{height:auto;display:block;padding:20px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:6px;padding:16px;margin-bottom:14px}
+.card input,.card textarea{width:100%;padding:7px;margin:4px 0 10px;background:#0b1220;color:#e2e8f0;border:1px solid #334155;border-radius:5px;font-family:Consolas,monospace}
+.tbl{width:100%;border-collapse:collapse}.tbl th,.tbl td{text-align:left;padding:8px;border-bottom:1px solid #334155}
+.tbl tr.row{cursor:pointer}.tbl tr.row:hover{background:#334155}
+.big{font-size:22px;font-weight:700;color:#fbbf24}.rev{color:#fbbf24;font-weight:700}
+.kv td{padding:4px 18px 4px 0}pre.code{max-height:260px;overflow:auto}
+</style></head><body>
+<h2>Examiner Dashboard <span class="tag">PROTOTYPE</span></h2>
+<div class="card" id="setup">
+  <h3>Create Examination</h3>
+  Exam title<input id="title" value="Python Programming Test 1">
+  Duration (minutes)<input id="dur" type="number" value="10">
+  Question<textarea id="q" rows="2">Write a Python program that reads N numbers and prints the largest number.</textarea>
+  Sample input<textarea id="sin" rows="2">5
+10 25 7 41 18</textarea>
+  Sample output<input id="sout" value="41">
+  Hidden test cases (format: input =&gt; output, separated by ###)
+  <textarea id="tests" rows="9">5
+10 25 7 41 18 => 41
+###
+3
+-5 -2 -9 => -2
+###
+1
+7 => 7
+###
+4
+10 10 10 10 => 10
+###
+6
+1 2 3 100 5 6 => 100</textarea>
+  <button class="btn" id="createBtn">CREATE EXAM</button>
+</div>
+<div class="card hidden" id="status">
+  <div class="big" id="sTitle"></div>
+  <p>Exam Code: <b class="big" id="sCode"></b> &nbsp; Status: <b id="sStatus"></b> &nbsp; <span id="sJoined"></span></p>
+  <button class="btn green" id="startBtn">START EXAM</button>
+  <h3>Students</h3>
+  <table class="tbl"><thead><tr><th>Student</th><th>Status</th><th>Score</th></tr></thead><tbody id="rows"></tbody></table>
+</div>
+<div id="detail"></div>
+<script src="/static/examiner.js"></script>
+</body></html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>Student - Online Coding Exam</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+<link rel="stylesheet" href="/static/style.css">
+<style>.box input{width:100%;padding:8px;margin:6px 0 12px;background:#0b1220;color:#e2e8f0;border:1px solid #475569;border-radius:5px}.err{color:#f87171}</style>
+</head><body>
+<header>
+  <div class="title" id="examTitle">Online Coding Exam</div>
+  <div>Student: <b id="student">-</b></div>
+  <div>TIME REMAINING: <b id="timer">--:--</b></div>
+  <div><button id="runBtn" class="btn">▶ Run</button><button id="submitBtn" class="btn green">Submit</button></div>
+</header>
+<div id="warn" class="warn hidden"></div>
+<main>
+  <section class="panel">
+    <h3>Question</h3><p id="qtext"></p>
+    <div class="lbl">Sample Input</div><pre class="code" id="sin"></pre>
+    <div class="lbl">Sample Output</div><pre class="code" id="sout"></pre>
+    <h3>Integrity Monitor</h3>
+    <table class="mon">
+      <tr><td>Keystrokes</td><td id="m-keys">0</td></tr><tr><td>Code edits</td><td id="m-edits">0</td></tr>
+      <tr><td>Cursor events</td><td id="m-cursor">0</td></tr><tr><td>Window changes</td><td id="m-focus">0</td></tr>
+      <tr><td>Paste events</td><td id="m-paste">0</td></tr><tr><td>Code executions</td><td id="m-runs">0</td></tr>
+      <tr><td>Warnings</td><td id="m-warn">0</td></tr><tr><td>Session</td><td id="m-status" class="ok">Active</td></tr>
+    </table>
+    <p class="muted">Behavioral monitoring is active. Signals are being recorded for later analysis.</p>
+  </section>
+  <section class="center">
+    <div id="editorWrap"><textarea id="code"></textarea></div>
+    <div class="io">
+      <div><h4>Input (stdin)</h4><textarea id="stdin"></textarea></div>
+      <div><h4>Output</h4><pre id="output"></pre></div>
+    </div>
+  </section>
+  <section class="panel">
+    <h3>Reference</h3><input id="search" placeholder="Search functions...">
+    <div class="tabs"><button id="tabF" class="active">Functions</button><button id="tabS">Syntax</button></div>
+    <div id="funcView"><div id="funcList"></div><div id="detail" class="detail">Click a function to see details.</div></div>
+    <div id="syntaxView" class="hidden"></div>
+  </section>
+</main>
+<div id="join" class="modal"><div class="box">
+  <h3>Join Exam</h3>
+  Name<input id="jname" placeholder="Your name">
+  Exam Code<input id="jcode" placeholder="e.g. PY101">
+  <div id="jerr" class="err"></div><button id="joinBtn" class="btn green">JOIN EXAM</button>
+</div></div>
+<div id="modal" class="modal hidden"><div class="box" id="modalBox"></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script src="/static/student.js"></script>
+</body></html>
