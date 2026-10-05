@@ -10,20 +10,32 @@ $("createBtn").onclick = async ()=>{
   });
   const r = await post("/api/exam/create", {title:$("title").value, duration:$("dur").value, question:$("q").value,
     sample_in:$("sin").value.trim(), sample_out:$("sout").value.trim(), tests});
-  CODE = r.code; localStorage.setItem("examCode", CODE); SEL = null; $("detail").innerHTML = ""; poll();
+  CODE = r.code; localStorage.setItem("examCode", CODE); SEL = null; $("detail").innerHTML = "";
+  $("setup").classList.add("hidden"); poll();
 };
-$("startBtn").onclick = async ()=>{ await post(`/api/exam/${CODE}/start`); poll(); };
+$("startBtn").onclick = async ()=>{ $("startBtn").disabled = true; await post(`/api/exam/${CODE}/start`); poll(); };
+$("endBtn").onclick = async ()=>{
+  if(!confirm("End the exam for ALL students now? Their current code will be auto-submitted.")) return;
+  await post(`/api/exam/${CODE}/end`); poll();
+};
+$("newBtn").onclick = ()=>{ localStorage.removeItem("examCode"); CODE = ""; SEL = null; $("detail").innerHTML = "";
+  $("status").classList.add("hidden"); $("setup").classList.remove("hidden"); };
 
 async function poll(){
   if(!CODE) return;
   const o = await fetch(`/api/exam/${CODE}/overview`).then(r=>r.json());
-  if(o.error){ return; }
-  $("status").classList.remove("hidden");
-  $("sTitle").textContent = o.title.toUpperCase(); $("sCode").textContent = CODE;
-  $("sStatus").textContent = o.status; $("sJoined").textContent = `${o.joined} students joined (${o.duration} min)`;
+  if(o.error) return;
+  $("setup").classList.add("hidden"); $("status").classList.remove("hidden");
+  $("sTitle").textContent = o.title; $("sCode").textContent = CODE;
+  $("sBadge").textContent = o.status; $("sBadge").className = "badge b-" + o.status;
+  $("sJoined").textContent = `${o.joined} student(s) joined · ${o.duration} min`;
+  const created = o.status === "CREATED", ended = o.status === "ENDED";
+  $("startBtn").classList.toggle("hidden", !created); $("startBtn").disabled = false;
+  $("endBtn").classList.toggle("hidden", created || ended);
+  $("newBtn").classList.toggle("hidden", !ended);
   $("rows").innerHTML = o.students.map(s=>`<tr class="row" onclick="SEL=${s.id};loadDetail()">
     <td>${esc(s.name)}</td><td>${s.status==="SUBMITTED"?"Submitted":"In progress"}</td>
-    <td>${s.status==="SUBMITTED" ? s.score+" / "+s.total : "-"}</td></tr>`).join("");
+    <td>${s.status==="SUBMITTED" ? s.score+" / "+s.total : "-"}</td></tr>`).join("") || `<tr><td colspan="3" class="muted">No students yet</td></tr>`;
   if(SEL) loadDetail();
 }
 
@@ -37,7 +49,7 @@ function label(e){
     case "FOCUS_LOST": return "Focus lost";
     case "FOCUS_RETURNED": return "Focus returned";
     case "PASTE_DETECTED": return `Paste detected (~${i.chars||0} characters)`;
-    case "TIME_EXPIRED": return "Time expired (auto-submitted)";
+    case "TIME_EXPIRED": return "Time expired / exam ended (auto-submitted)";
     case "SUBMITTED": return "Submitted" + (i.score ? ` (${i.score})` : "");
     default: return e.type;
   }
@@ -47,23 +59,20 @@ async function loadDetail(){
   const d = await fetch(`/api/session/${SEL}`).then(r=>r.json()); if(d.error) return;
   const st = d.stats, rev = d.indicator==="REQUIRES REVIEW";
   const decision = d.review==="SAFE" ? "Examiner decision: MARKED SAFE" : d.review==="REVIEW" ? "Examiner decision: REVIEW REQUIRED" : "";
-  $("detail").innerHTML = `<div class="card"><h3>STUDENT DETAILS</h3><table class="kv">
-   <tr><td>Student</td><td><b>${esc(d.name)}</b></td></tr>
-   <tr><td>Submission</td><td>${d.status==="SUBMITTED"?"Submitted":"In progress"}</td></tr>
-   <tr><td>Time used</td><td>${mmss(d.time_used)}</td></tr>
-   <tr><td>Test results</td><td>${d.status==="SUBMITTED" ? d.score+" / "+d.total : "-"}</td></tr>
-   <tr><td>Code executions</td><td>${st.runs}</td></tr><tr><td>Keystrokes</td><td>${st.keys}</td></tr>
-   <tr><td>Code edits</td><td>${st.edits}</td></tr><tr><td>Focus changes</td><td>${st.focus}</td></tr>
-   <tr><td>Paste events</td><td>${st.paste}</td></tr><tr><td>Warnings</td><td>${d.warnings}</td></tr></table>
-   <div>${d.results.map((p,i)=>`Test ${i+1} ${p?"✓":"✗"}`).join(" &nbsp; ")}</div></div>
-   <div class="card"><h3>SUBMITTED CODE</h3><pre class="code">${esc(d.code)||"(not submitted yet)"}</pre></div>
-   <div class="card"><h3>BEHAVIORAL EVENT TIMELINE</h3><pre class="code">${esc(d.events.map(e=>new Date(e.ts*1000).toLocaleTimeString()+"  "+label(e)).join("\n"))}</pre></div>
-   <div class="card"><h3>INTEGRITY REVIEW</h3><p>Behavioral evidence:</p><ul>${d.reasons.map(r=>`<li>${esc(r)}</li>`).join("")}</ul>
+  const kv = (a,b)=>`<tr><td>${a}</td><td>${b}</td></tr>`;
+  $("detail").innerHTML = `<div class="grid"><div class="card"><h3>Student details</h3><table class="kv">
+   ${kv("Student",esc(d.name))}${kv("Submission",d.status==="SUBMITTED"?"Submitted":"In progress")}
+   ${kv("Time used",mmss(d.time_used))}${kv("Test results",d.status==="SUBMITTED"?d.score+" / "+d.total:"-")}
+   ${kv("Code executions",st.runs)}${kv("Keystrokes",st.keys)}${kv("Code edits",st.edits)}
+   ${kv("Focus changes",st.focus)}${kv("Paste events",st.paste)}${kv("Warnings",d.warnings)}</table>
+   <p>${d.results.map((p,i)=>`Test ${i+1} ${p?"✓":"✗"}`).join(" &nbsp; ")}</p></div>
+   <div class="card"><h3>Integrity review</h3><p class="muted">Behavioral evidence:</p><ul>${d.reasons.map(r=>`<li>${esc(r)}</li>`).join("")}</ul>
    <p>System indicator: <b class="${rev?"rev":"ok"}">${d.indicator}</b></p>
    <p class="muted">Rule-based indicator for examiner review. It is not a finding of misconduct.</p>
    <button class="btn green" onclick="decide('SAFE')">MARK SAFE</button>
-   <button class="btn" style="background:#b45309" onclick="decide('REVIEW')">REQUIRE REVIEW</button>
-   <p><b>${decision}</b></p></div>`;
+   <button class="btn amber" onclick="decide('REVIEW')">REQUIRE REVIEW</button><p><b>${decision}</b></p></div></div>
+   <div class="card"><h3>Submitted code</h3><pre class="code">${esc(d.code)||"(not submitted yet)"}</pre></div>
+   <div class="card"><h3>Behavioral event timeline</h3><pre class="code">${esc(d.events.map(e=>new Date(e.ts*1000).toLocaleTimeString()+"  "+label(e)).join("\n"))}</pre></div>`;
 }
 async function decide(x){ await post(`/api/session/${SEL}/review`, {decision:x}); loadDetail(); }
 setInterval(poll, 2000); poll();

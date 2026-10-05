@@ -1,26 +1,42 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><title>Examiner Dashboard</title>
-<link rel="stylesheet" href="/static/style.css">
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Examiner Dashboard</title>
 <style>
-body{height:auto;display:block;padding:20px}
-.card{background:#1e293b;border:1px solid #334155;border-radius:6px;padding:16px;margin-bottom:14px}
-.card input,.card textarea{width:100%;padding:7px;margin:4px 0 10px;background:#0b1220;color:#e2e8f0;border:1px solid #334155;border-radius:5px;font-family:Consolas,monospace}
-.tbl{width:100%;border-collapse:collapse}.tbl th,.tbl td{text-align:left;padding:8px;border-bottom:1px solid #334155}
-.tbl tr.row{cursor:pointer}.tbl tr.row:hover{background:#334155}
-.big{font-size:22px;font-weight:700;color:#fbbf24}.rev{color:#fbbf24;font-weight:700}
-.kv td{padding:4px 18px 4px 0}pre.code{max-height:260px;overflow:auto}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:#0b1220;color:#e2e8f0;font-size:14px}
+.top{background:linear-gradient(90deg,#1e3a8a,#312e81);padding:18px 32px;font-size:20px;font-weight:700;letter-spacing:.3px}
+.top small{display:block;font-size:12px;font-weight:400;color:#c7d2fe;margin-top:2px}
+.wrap{max-width:1000px;margin:24px auto;padding:0 20px}
+.card{background:#111a2e;border:1px solid #243049;border-radius:12px;padding:22px;margin-bottom:18px;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.card h3{margin:0 0 14px;font-size:13px;letter-spacing:1px;color:#93c5fd;text-transform:uppercase}
+label{display:block;font-size:12px;color:#94a3b8;margin:10px 0 4px}
+input,textarea{width:100%;padding:10px;background:#0b1220;color:#e2e8f0;border:1px solid #2b3a57;border-radius:8px;font-family:Consolas,monospace;font-size:13px}
+input:focus,textarea:focus{outline:2px solid #3b82f6;border-color:transparent}
+.btn{border:0;padding:10px 22px;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;background:#3b82f6;margin:10px 8px 0 0}
+.btn.green{background:#16a34a}.btn.red{background:#dc2626}.btn.amber{background:#b45309}.btn:disabled{opacity:.4;cursor:not-allowed}
+.hidden{display:none!important}
+.code-box{display:inline-block;font-size:30px;font-weight:800;letter-spacing:4px;color:#fbbf24;background:#0b1220;border:1px dashed #fbbf24;border-radius:10px;padding:6px 18px}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700}
+.b-CREATED{background:#475569}.b-ACTIVE{background:#15803d}.b-FINISHED{background:#1d4ed8}.b-ENDED{background:#991b1b}
+.tbl{width:100%;border-collapse:collapse}.tbl th{color:#94a3b8;font-size:12px;text-transform:uppercase;text-align:left;padding:8px}
+.tbl td{padding:12px 8px;border-top:1px solid #243049}.tbl tr.row{cursor:pointer}.tbl tr.row:hover{background:#1b2742}
+.kv{width:100%}.kv td{padding:6px 0;border-bottom:1px solid #1b2742}.kv td:last-child{text-align:right;font-weight:600}
+pre.code{background:#020617;border-radius:8px;padding:12px;max-height:260px;overflow:auto;font-family:Consolas,monospace;white-space:pre-wrap}
+.ok{color:#4ade80}.rev{color:#fbbf24;font-weight:700}.muted{color:#94a3b8;font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 </style></head><body>
-<h2>Examiner Dashboard <span class="tag">PROTOTYPE</span></h2>
+<div class="top">Examiner Dashboard<small>Online IDE for Automated Programming Assessment</small></div>
+<div class="wrap">
 <div class="card" id="setup">
   <h3>Create Examination</h3>
-  Exam title<input id="title" value="Python Programming Test 1">
-  Duration (minutes)<input id="dur" type="number" value="10">
-  Question<textarea id="q" rows="2">Write a Python program that reads N numbers and prints the largest number.</textarea>
-  Sample input<textarea id="sin" rows="2">5
-10 25 7 41 18</textarea>
-  Sample output<input id="sout" value="41">
-  Hidden test cases (format: input =&gt; output, separated by ###)
-  <textarea id="tests" rows="9">5
+  <label>Exam title</label><input id="title" value="Python Programming Test 1">
+  <label>Duration (minutes)</label><input id="dur" type="number" value="10">
+  <label>Question</label><textarea id="q" rows="2">Write a Python program that reads N numbers and prints the largest number.</textarea>
+  <div class="grid"><div><label>Sample input</label><textarea id="sin" rows="2">5
+10 25 7 41 18</textarea></div>
+  <div><label>Sample output</label><textarea id="sout" rows="2">41</textarea></div></div>
+  <label>Hidden test cases (input =&gt; output, separated by ###)</label>
+  <textarea id="tests" rows="8">5
 10 25 7 41 18 => 41
 ###
 3
@@ -37,12 +53,16 @@ body{height:auto;display:block;padding:20px}
   <button class="btn" id="createBtn">CREATE EXAM</button>
 </div>
 <div class="card hidden" id="status">
-  <div class="big" id="sTitle"></div>
-  <p>Exam Code: <b class="big" id="sCode"></b> &nbsp; Status: <b id="sStatus"></b> &nbsp; <span id="sJoined"></span></p>
+  <h3 id="sTitle"></h3>
+  <div>Exam Code &nbsp;<span class="code-box" id="sCode"></span> &nbsp; <span class="badge" id="sBadge"></span>
+  &nbsp; <span class="muted" id="sJoined"></span></div>
   <button class="btn green" id="startBtn">START EXAM</button>
-  <h3>Students</h3>
+  <button class="btn red hidden" id="endBtn">END EXAM</button>
+  <button class="btn amber hidden" id="newBtn">NEW EXAM</button>
+  <h3 style="margin-top:22px">Students</h3>
   <table class="tbl"><thead><tr><th>Student</th><th>Status</th><th>Score</th></tr></thead><tbody id="rows"></tbody></table>
 </div>
 <div id="detail"></div>
+</div>
 <script src="/static/examiner.js"></script>
 </body></html>

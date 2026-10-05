@@ -20,7 +20,9 @@ def add(c, sid, typ, info="", ts=None):
     c.execute("INSERT INTO events(session_id,ts,type,info) VALUES(?,?,?,?)", (sid, ts or now(), typ, json.dumps(info)))
 
 def get_exam(c, code): return c.execute("SELECT * FROM exams WHERE code=?", (code,)).fetchone()
-def remaining(e, s): return max(0, int(e["duration"] * 60 - (now() - s["joined_at"])))
+def remaining(e, s):
+    if e["status"] == "ENDED": return 0
+    return max(0, int(e["duration"] * 60 - (now() - s["joined_at"])))
 
 # DEMO ONLY: runs student code in a local subprocess with a 5s timeout. NOT a secure sandbox.
 # Replace with Judge0 (sandboxed execution) in the next phase.
@@ -54,6 +56,11 @@ def start(code):
     c = db(); c.execute("UPDATE exams SET status='ACTIVE', started_at=? WHERE code=?", (now(), code)); c.commit()
     return jsonify(ok=True)
 
+@app.post("/api/exam/<code>/end")
+def end_exam(code):
+    c = db(); c.execute("UPDATE exams SET status='ENDED' WHERE code=?", (code,)); c.commit()
+    return jsonify(ok=True)
+
 @app.get("/api/exam/<code>/overview")
 def overview(code):
     c = db(); e = get_exam(c, code)
@@ -70,6 +77,7 @@ def join():
     c = db(); e = get_exam(c, code)
     if not name: return jsonify(error="Enter your name"), 400
     if not e: return jsonify(error="Invalid exam code"), 404
+    if e["status"] == "ENDED": return jsonify(error="This exam has ended"), 400
     if e["status"] != "ACTIVE": return jsonify(error="Exam has not started yet"), 400
     s = c.execute("SELECT * FROM sessions WHERE exam_code=? AND name=?", (code, name)).fetchone()
     if s and s["status"] == "SUBMITTED": return jsonify(error="You have already submitted"), 400
